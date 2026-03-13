@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED=1
 
 # System deps
 RUN apt-get update && apt-get install -y \
-    python3.10 python3.10-venv python3.10-dev python3-pip \
-    git git-lfs curl build-essential libsndfile1 \
+    python3.10 python3.10-venv python3.10-dev python3-dev python3-pip \
+    git git-lfs curl build-essential portaudio19-dev libsndfile1 \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /usr/bin/python3.10 /usr/bin/python3 \
     && ln -sf /usr/bin/python3.10 /usr/bin/python

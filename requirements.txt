@@ -1,6 +1,7 @@
 # Core training dependencies
 scipy
-numpy
+numpy<2
+pyarrow>=8.0.0,<15.0.0
 tqdm
 pyyaml
 requests
