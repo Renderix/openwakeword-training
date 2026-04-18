@@ -62,33 +62,31 @@ else
     echo "MIT RIRs already exist, skipping."
 fi
 
-# AudioSet background audio
+# AudioSet background audio (streaming API — dataset format changed to parquet)
 if [ ! -d "$DATA_DIR/audioset_16k" ]; then
     echo "Downloading AudioSet background audio..."
-    mkdir -p "$DATA_DIR/audioset" "$DATA_DIR/audioset_16k"
-    curl -L -o "$DATA_DIR/audioset/bal_train09.tar" \
-        'https://huggingface.co/datasets/agkphysics/AudioSet/resolve/main/bal_train09.tar'
-    tar -xf "$DATA_DIR/audioset/bal_train09.tar" -C "$DATA_DIR/audioset"
+    mkdir -p "$DATA_DIR/audioset_16k"
 
     python3 << EOF
 import datasets
 import scipy.io.wavfile
 import numpy as np
-from pathlib import Path
 from tqdm import tqdm
 
-audioset = datasets.Dataset.from_dict({
-    "audio": [str(i) for i in Path("$DATA_DIR/audioset/audio").glob("**/*.flac")]
-}).cast_column("audio", datasets.Audio(sampling_rate=16000))
+ds = datasets.load_dataset("agkphysics/AudioSet", split="balanced_train", streaming=True)
+ds = iter(ds.cast_column("audio", datasets.Audio(sampling_rate=16000)))
 
-for row in tqdm(audioset, desc="Processing AudioSet"):
-    name = row['audio']['path'].split('/')[-1].replace(".flac", ".wav")
-    scipy.io.wavfile.write(
-        "$DATA_DIR/audioset_16k/" + name, 16000,
-        (row['audio']['array'] * 32767).astype(np.int16)
-    )
+for i in tqdm(range(500), desc="Processing AudioSet"):
+    try:
+        row = next(ds)
+        name = row['audio']['path'].split('/')[-1].replace(".flac", ".wav").replace(".mp3", ".wav")
+        scipy.io.wavfile.write(
+            "$DATA_DIR/audioset_16k/" + name, 16000,
+            (row['audio']['array'] * 32767).astype(np.int16)
+        )
+    except StopIteration:
+        break
 EOF
-    rm -rf "$DATA_DIR/audioset"
 else
     echo "AudioSet already exists, skipping."
 fi
