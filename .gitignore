@@ -16,8 +16,9 @@ MIT_environmental_impulse_responses/
 openwakeword/
 piper-sample-generator/
 
-# Generated training outputs
-my_custom_model/
+# Generated training outputs (keep .onnx models for distribution)
+my_custom_model/*
+!my_custom_model/*.onnx
 training_config.yaml
 
 # User recordings
